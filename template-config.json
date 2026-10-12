@@ -1,0 +1,244 @@
+{
+  "services": {
+    "5ff7fdbb-b75c-4d2f-96b8-49c97806d3a7": {
+      "icon": "https://raw.githubusercontent.com/nomideusz/activepieces-railway/main/icon.svg",
+      "name": "Activepieces",
+      "build": {},
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": "/api/v1/health",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "ghcr.io/activepieces/activepieces:0.92.2"
+      },
+      "networking": {
+        "serviceDomains": {
+          "<hasDomain>": {}
+        }
+      },
+      "volumeMounts": {},
+      "variables": {
+        "PORT": {
+          "defaultValue": "80",
+          "description": "Port Railway routes to - leave as is",
+          "isOptional": false
+        },
+        "AP_PORT": {
+          "defaultValue": "80",
+          "description": "Port Activepieces listens on - must match PORT",
+          "isOptional": false
+        },
+        "AP_CONTAINER_TYPE": {
+          "defaultValue": "APP",
+          "description": "This service runs the API, web UI and webhooks; flows execute on the Worker service",
+          "isOptional": false
+        },
+        "AP_FRONTEND_URL": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public URL of Activepieces (webhook URLs, OAuth redirects, email links) - set it to your custom domain after adding one",
+          "isOptional": false
+        },
+        "AP_ENCRYPTION_KEY": {
+          "defaultValue": "${{secret(32, \"0123456789abcdef\")}}",
+          "description": "Encrypts stored app connections (32 hex chars). BACK IT UP - changing it makes every saved connection unreadable",
+          "isOptional": false
+        },
+        "AP_JWT_SECRET": {
+          "defaultValue": "${{secret(48, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Signs user sessions and the Worker's token - changing it logs everyone out",
+          "isOptional": false
+        },
+        "AP_EXECUTION_MODE": {
+          "defaultValue": "SANDBOX_CODE_ONLY",
+          "description": "Code steps run in an isolated V8 sandbox (no env, files or npm packages) - works without privileged containers. Use UNSANDBOXED if code steps need npm packages; SANDBOX_PROCESS modes need privileges Railway does not grant. The Worker follows this setting",
+          "isOptional": false
+        },
+        "AP_POSTGRES_URL": {
+          "defaultValue": "postgresql://${{Postgres.POSTGRES_USER}}:${{Postgres.POSTGRES_PASSWORD}}@${{Postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/${{Postgres.POSTGRES_DB}}",
+          "description": "Postgres on the private network",
+          "isOptional": false
+        },
+        "AP_REDIS_URL": {
+          "defaultValue": "redis://default:${{Redis.REDIS_PASSWORD}}@${{Redis.RAILWAY_PRIVATE_DOMAIN}}:6379/0?family=0",
+          "description": "Redis job queue on the private network (family=0 lets ioredis connect over IPv6)",
+          "isOptional": false
+        },
+        "AP_TELEMETRY_ENABLED": {
+          "defaultValue": "false",
+          "description": "Anonymous usage telemetry to Activepieces",
+          "isOptional": false
+        },
+        "NODE_OPTIONS": {
+          "defaultValue": "--max-old-space-size=512",
+          "description": "Caps the API's JavaScript heap. Without it Node sizes the heap from the container limit and holds ~1.4 GB after the first piece-catalog sync; with it the API peaks ~700 MB and idles ~380 MB. Raise it if logs show 'heap out of memory'",
+          "isOptional": false
+        },
+        "RAILWAY_HEALTHCHECK_TIMEOUT_SEC": {
+          "defaultValue": "600",
+          "description": "First boot runs the database migrations and syncs the piece catalog before the health check can pass",
+          "isOptional": false
+        },
+        "AP_SMTP_HOST": {
+          "defaultValue": "",
+          "description": "Optional SMTP server for invitation emails (Railway allows outbound SMTP on Pro only)",
+          "isOptional": true
+        },
+        "AP_SMTP_PORT": {
+          "defaultValue": "587",
+          "description": "SMTP port",
+          "isOptional": true
+        },
+        "AP_SMTP_USERNAME": {
+          "defaultValue": "",
+          "description": "SMTP username",
+          "isOptional": true
+        },
+        "AP_SMTP_PASSWORD": {
+          "defaultValue": "",
+          "description": "SMTP password",
+          "isOptional": true
+        },
+        "AP_SMTP_SENDER_EMAIL": {
+          "defaultValue": "",
+          "description": "Sender address for Activepieces emails",
+          "isOptional": true
+        },
+        "AP_SMTP_SENDER_NAME": {
+          "defaultValue": "Activepieces",
+          "description": "Sender name for Activepieces emails",
+          "isOptional": true
+        }
+      }
+    },
+    "3742b776-7776-42fb-b2c5-ce18b76021c2": {
+      "icon": "https://raw.githubusercontent.com/nomideusz/activepieces-railway/main/icon.svg",
+      "name": "Worker",
+      "build": {},
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": "/worker/health",
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "ghcr.io/activepieces/activepieces:0.92.2"
+      },
+      "networking": {
+        "serviceDomains": {}
+      },
+      "volumeMounts": {},
+      "variables": {
+        "PORT": {
+          "defaultValue": "3000",
+          "description": "Port of the worker's health endpoint - leave as is",
+          "isOptional": false
+        },
+        "AP_PORT": {
+          "defaultValue": "3000",
+          "description": "Must match PORT",
+          "isOptional": false
+        },
+        "AP_CONTAINER_TYPE": {
+          "defaultValue": "WORKER",
+          "description": "Executes flows, triggers and code steps. Add replicas to run more flows in parallel",
+          "isOptional": false
+        },
+        "AP_FRONTEND_URL": {
+          "defaultValue": "http://${{Activepieces.RAILWAY_PRIVATE_DOMAIN}}:${{Activepieces.PORT}}",
+          "description": "How the worker reaches the Activepieces API - private network, not the public URL (webhook URLs come from the app's own AP_FRONTEND_URL)",
+          "isOptional": false
+        },
+        "AP_JWT_SECRET": {
+          "defaultValue": "${{Activepieces.AP_JWT_SECRET}}",
+          "description": "Shared with the app; the worker signs its own token with it at boot",
+          "isOptional": false
+        },
+        "AP_WORKER_CONCURRENCY": {
+          "defaultValue": "2",
+          "description": "Flows one worker runs at the same time. Each running flow needs RAM; raise it with the service's memory, or add replicas",
+          "isOptional": false
+        }
+      }
+    },
+    "6a81aef4-22bf-45ec-becf-f96b5784e1c7": {
+      "icon": "https://devicons.railway.app/i/postgresql.svg",
+      "name": "Postgres",
+      "build": {},
+      "deploy": {
+        "startCommand": null,
+        "healthcheckPath": null,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "pgvector/pgvector:0.8.7-pg17"
+      },
+      "networking": {
+        "serviceDomains": {}
+      },
+      "volumeMounts": {
+        "7ed78f33-4943-48f0-8614-71a3cda0d8c7": {
+          "mountPath": "/var/lib/postgresql/data"
+        }
+      },
+      "variables": {
+        "POSTGRES_DB": {
+          "defaultValue": "activepieces",
+          "description": "Database name",
+          "isOptional": false
+        },
+        "POSTGRES_USER": {
+          "defaultValue": "activepieces",
+          "description": "Database user",
+          "isOptional": false
+        },
+        "POSTGRES_PASSWORD": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Auto-generated database password",
+          "isOptional": false
+        },
+        "PGDATA": {
+          "defaultValue": "/var/lib/postgresql/data/pgdata",
+          "description": "Data subdirectory - keeps Postgres happy on Railway volumes",
+          "isOptional": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "60",
+          "description": "Time for Postgres to shut down cleanly on redeploy",
+          "isOptional": false
+        }
+      }
+    },
+    "42b8b085-acd7-4b07-b53a-a33b3377a613": {
+      "icon": "https://devicons.railway.app/i/redis.svg",
+      "name": "Redis",
+      "build": {},
+      "deploy": {
+        "startCommand": "/bin/sh -c \"chown -R redis:redis /data && exec docker-entrypoint.sh redis-server --requirepass $REDIS_PASSWORD --appendonly yes\"",
+        "healthcheckPath": null,
+        "restartPolicyType": "ON_FAILURE",
+        "restartPolicyMaxRetries": 10
+      },
+      "source": {
+        "image": "redis:8.10.2-alpine"
+      },
+      "networking": {
+        "serviceDomains": {}
+      },
+      "volumeMounts": {
+        "ecdabdac-0687-4a53-bda4-f79c8d6d2e77": {
+          "mountPath": "/data"
+        }
+      },
+      "variables": {
+        "REDIS_PASSWORD": {
+          "defaultValue": "${{secret(32, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Auto-generated Redis password",
+          "isOptional": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "Activepieces | Open-Source Zapier & n8n Alternative with Workers",
+  "short_name": "Activepieces Workflows",
+  "description": "No-code automation with 600+ pieces, a separate worker and code sandbox",
+  "category": "Automation",
+  "image": "https://raw.githubusercontent.com/nomideusz/activepieces-railway/main/icon.svg",
+  "card_desc": "Activepieces: the open-source Zapier and n8n alternative. Visual flow builder with hundreds of integrations, AI agents and MCP, on Postgres and Redis with a scalable worker service and sandboxed code steps.",
+  "deploy_marker": "ghcr.io/activepieces/activepieces:0.92.2"
+}
