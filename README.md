@@ -1,6 +1,6 @@
 # Deploy and Host Activepieces on Railway
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/activepieces-workflows?utm_medium=integration&utm_source=button&utm_campaign=activepieces-workflows)
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/new/template/activepieces-workflows?referralCode=sLjDXb&utm_medium=integration&utm_source=button&utm_campaign=activepieces-workflows)
 
 [Activepieces](https://www.activepieces.com/) is the open-source alternative to Zapier, Make and n8n: a visual flow builder with hundreds of integrations ("pieces"), webhooks, schedules, branches, loops, code steps, human-in-the-loop approvals, AI agents and an MCP server for your AI tools. This template runs the official Activepieces image the way upstream runs it in production, as a separate app and worker, on Postgres and Redis.
 
